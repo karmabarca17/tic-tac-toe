@@ -1,0 +1,69 @@
+// app.js
+const boxes = document.getElementsByClassName("box");
+const instruction = document.getElementById("instruction");
+const resetBtn = document.getElementById("reset-btn");
+
+let currentPlayer = "X";
+let gameActive = true;
+
+// Convert HTMLCollection to Array so we can use index
+const boxesArray = Array.from(boxes);
+
+boxesArray.forEach(box => {
+  box.addEventListener("click", function () {
+    if (!gameActive) return;
+
+    const value = this.getAttribute("value"); // "1" to "9"
+    const index = parseInt(value) - 1;         // 0 to 8
+
+    // If already clicked, ignore
+    if (this.querySelector(".box_content").textContent !== "") return;
+
+    // Place X or O
+    this.querySelector(".box_content").textContent = currentPlayer;
+
+    // Check win
+    if (checkWin(currentPlayer)) {
+      instruction.textContent = `${currentPlayer} Wins!`;
+      gameActive = false;
+      return;
+    }
+
+    // Check draw
+    if ([...boxesArray].every(b => b.querySelector(".box_content").textContent !== "")) {
+      instruction.textContent = "It's a Draw!";
+      gameActive = false;
+      return;
+    }
+
+    // Switch player
+    currentPlayer = currentPlayer === "X" ? "O" : "X";
+    instruction.textContent = `${currentPlayer}'s Turn`;
+  });
+});
+
+// Reset game
+resetBtn.addEventListener("click", () => {
+  boxesArray.forEach(box => {
+    box.querySelector(".box_content").textContent = "";
+  });
+  currentPlayer = "X";
+  instruction.textContent = "X's Turn";
+  gameActive = true;
+});
+
+// Win patterns (index 0-8)
+function checkWin(player) {
+  const wins = [
+    [0,1,2], [3,4,5], [6,7,8], // rows
+    [0,3,6], [1,4,7], [2,5,8], // columns
+    [0,4,8], [2,4,6]          // diagonals
+  ];
+
+  return wins.some(combo => {
+    return combo.every(i => {
+      const box = boxesArray[i];
+      return box.querySelector(".box_content").textContent === player;
+    });
+  });
+}
