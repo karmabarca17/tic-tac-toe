@@ -10,7 +10,6 @@ let line = document.querySelector("#line");
 gear.addEventListener("click",()=>{
   spinner.classList.toggle("fa-spin")
   gear.classList.toggle("active")
-
   menu.classList.toggle("active")
 })
 let gameOver = false
