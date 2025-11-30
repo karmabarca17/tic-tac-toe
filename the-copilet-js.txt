@@ -1,0 +1,164 @@
+// Tic-Tac-Toe main script - cleaned up and fixed
+
+const gridItems = Array.from(document.querySelectorAll('.box'));
+const resetBtn = document.getElementById('reset');
+const header = document.getElementById('header');
+const instruction = document.getElementById('instruction');
+let currentPlayer = 'x';
+const gear = document.querySelector('.gear');
+const spinner = document.querySelector('.gear .fa-palette');
+const menu = document.querySelector('.bullets');
+const line = document.querySelector('#line');
+
+let gameOver = false;
+let boardArray = new Array(9).fill('');
+
+instruction.textContent = `${currentPlayer} turn`;
+
+// Toggle color gear menu
+gear.addEventListener('click', () => {
+  if (spinner) spinner.classList.toggle('fa-spin');
+  gear.classList.toggle('active');
+  menu.classList.toggle('active');
+});
+
+// Bullet color menu behavior
+const bullets = document.querySelectorAll('.bullets ul li');
+Array.from(bullets).forEach(li => {
+  li.style.backgroundColor = li.dataset.color;
+  li.addEventListener('click', () => {
+    document.body.style.backgroundColor = li.dataset.color;
+    gridItems.forEach(item => item.style.borderColor = li.dataset.color);
+  });
+});
+
+// Winning line drawing and board evaluation
+function drawLineFor(name) {
+  if (!line) return;
+  // Make sure the line is visible and reset width before animating
+  line.style.display = 'block';
+  line.style.width = '0%';
+  switch (name) {
+    case 'row1':
+      line.style.top = '2rem';
+      line.style.left = '0';
+      line.style.right = 'auto';
+      line.style.transform = 'none';
+      setTimeout(() => line.style.width = '90%', 10);
+      break;
+    case 'row2':
+      line.style.top = '50%';
+      line.style.left = '0';
+      line.style.right = 'auto';
+      line.style.transform = 'translateY(-50%)';
+      setTimeout(() => line.style.width = '90%', 10);
+      break;
+    case 'row3':
+      line.style.top = '90%';
+      line.style.left = '0';
+      line.style.right = 'auto';
+      line.style.transform = 'translateY(-50%)';
+      setTimeout(() => line.style.width = '90%', 10);
+      break;
+    case 'col1':
+      line.style.top = '48%';
+      line.style.left = '-16%';
+      line.style.right = 'auto';
+      line.style.transform = 'translateY(-50%) rotate(90deg)';
+      setTimeout(() => line.style.width = '63%', 10);
+      break;
+    case 'col2':
+      line.style.top = '48%';
+      line.style.right = '73px';
+      line.style.left = 'auto';
+      line.style.transform = 'translateY(-50%) rotate(90deg)';
+      setTimeout(() => line.style.width = '63%', 10);
+      break;
+    case 'col3':
+      line.style.top = '48%';
+      line.style.right = '-60px';
+      line.style.left = 'auto';
+      line.style.transform = 'translateY(-50%) rotate(90deg)';
+      setTimeout(() => line.style.width = '63%', 10);
+      break;
+    case 'diag1':
+      line.style.top = '48%';
+      line.style.right = '5%';
+      line.style.left = 'auto';
+      line.style.transform = 'translateY(-50%) rotate(34deg)';
+      setTimeout(() => line.style.width = '90%', 10);
+      break;
+    case 'diag2':
+      line.style.top = '50%';
+      line.style.right = '8%';
+      line.style.left = 'auto';
+      line.style.transform = 'translateY(-50%) rotate(-34deg)';
+      setTimeout(() => line.style.width = '89%', 10);
+      break;
+  }
+}
+
+function checkWin() {
+  if (line) line.style.width = '0%';
+  const combos = [
+    { pos: [0, 1, 2], name: 'row1' },
+    { pos: [3, 4, 5], name: 'row2' },
+    { pos: [6, 7, 8], name: 'row3' },
+    { pos: [0, 3, 6], name: 'col1' },
+    { pos: [1, 4, 7], name: 'col2' },
+    { pos: [2, 5, 8], name: 'col3' },
+    { pos: [0, 4, 8], name: 'diag1' },
+    { pos: [6, 4, 2], name: 'diag2' }
+  ];
+
+  for (const combo of combos) {
+    const [a, b, c] = combo.pos;
+    if (boardArray[a] && boardArray[a] === boardArray[b] && boardArray[b] === boardArray[c]) {
+      drawLineFor(combo.name);
+      return true;
+    }
+  }
+  return false;
+}
+
+// Initialize grid indices and click handlers
+gridItems.forEach((item, index) => {
+  item.dataset.index = index; // explicit index
+  item.addEventListener('click', function () {
+    if (gameOver) return;
+    const idx = Number(this.dataset.index);
+    if (boardArray[idx]) return;
+
+    boardArray[idx] = currentPlayer;
+    this.textContent = currentPlayer;
+
+    if (checkWin()) {
+      resetBtn.style.display = 'block';
+      instruction.textContent = `The ${currentPlayer} won!`;
+      gameOver = true;
+      return;
+    }
+
+    if (!boardArray.includes('')) {
+      resetBtn.style.display = 'block';
+      instruction.textContent = 'Draw';
+      gameOver = true;
+      return;
+    }
+
+    // switch players
+    currentPlayer = currentPlayer === 'x' ? 'o' : 'x';
+    instruction.textContent = `${currentPlayer} turn`;
+  });
+});
+
+// Reset action
+resetBtn.addEventListener('click', () => {
+  currentPlayer = 'x';
+  if (line) { line.style.width = '0%'; line.style.display = 'none'; }
+  gameOver = false;
+  instruction.textContent = `${currentPlayer} turn`;
+  gridItems.forEach(el => el.textContent = '');
+  resetBtn.style.display = 'none';
+  boardArray = new Array(9).fill('');
+});
